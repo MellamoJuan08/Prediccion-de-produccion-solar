@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Predicción Energía Solar - Avatar Inteligente</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* === ESTILO GENERAL === */
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #00796B, #004D40);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* === HEADER === */
+        header {
+            width: 100%;
+            background: linear-gradient(135deg, #388E3C, #2E7D32);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .header-text {
+            font-size: 1.6rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .logo-container img {
+            max-height: 100px;
+            max-width: 280px;
+            object-fit: contain;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .logo-container img:hover {
+            transform: scale(1.08);
+        }
+
+        /* === CONTENEDOR PRINCIPAL === */
+        .contenedor-principal {
+            background: rgba(255, 255, 255, 0.98);
+            width: 90%;
+            max-width: 1400px;
+            border-radius: 20px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        /* === BOTONES DE SECCIÓN === */
+        .botones-panel {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .botones-panel button {
+            background: linear-gradient(135deg, #81C784, #66BB6A);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .botones-panel button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+
+        /* === SECCIONES === */
+        .seccion {
+            display: none;
+            width: 100%;
+            text-align: center;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .seccion.activa {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        /* === CONTENIDO PREDICTOR CON DISEÑO DE DOS COLUMNAS === */
+        .contenido-predictor {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 2rem;
+            width: 100%;
+            max-width: 1200px;
+            align-items: start;
+        }
+
+        /* === COLUMNA IZQUIERDA - FORMULARIO === */
+        .columna-formulario {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .formulario-predictor {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .formulario-predictor label {
+            font-weight: bold;
+            color: #2E7D32;
+            text-align: left;
+            font-size: 1rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .formulario-predictor input, .formulario-predictor select {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .formulario-predictor input:focus, .formulario-predictor select:focus {
+            border-color: #4CAF50;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .formulario-predictor button {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+            width: 100%;
+        }
+
+        .btn-calcular {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-limpiar {
+            background: linear-gradient(135deg, #f44336, #da190b);
+            color: white;
+        }
+
+        .formulario-predictor button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        /* === RESULTADO PUNTUAL === */
+        .resultado {
+            background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+            padding: 1.2rem;
+            border-radius: 12px;
+            font-weight: bold;
+            color: #2E7D32;
+            border-left: 6px solid #4CAF50;
+            font-size: 1.1rem;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 100%;
+            word-wrap: break-word;
+        }
+
+        /* === COLUMNA DERECHA - RESULTADOS === */
+        .columna-resultados {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* === AVATAR Y BURBUJA === */
+        .avatar-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .avatar-img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+            transition: all 0.5s ease;
+            border: 4px solid transparent;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4) border-box;
+            flex-shrink: 0;
+        }
+
+        .avatar-img:hover {
+            transform: scale(1.05) rotate(5deg);
+        }
+
+        .burbuja-chat {
+            flex: 1;
+            background: white;
+            padding: 1.2rem;
+            border-radius: 20px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 2px solid #e9ecef;
+            min-width: 0;
+            word-wrap: break-word;
+        }
+
+        .burbuja-chat::before {
+            content: '';
+            position: absolute;
+            left: -15px;
+            top: 30px;
+            border: 15px solid transparent;
+            border-right-color: white;
+        }
+
+        .mensaje-avatar {
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #333;
+            margin: 0;
+            font-style: italic;
+            word-wrap: break-word;
+        }
+
+        .analisis-ia {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #E3F2FD;
+            border-radius: 10px;
+            border-left: 4px solid #2196F3;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        /* === GRÁFICA === */
+        .grafica-container {
+            text-align: center;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .grafica-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .leyenda-grafica {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .item-leyenda {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .color-muestra {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        .color-usuario {
+            background: blue;
+            border: 2px solid yellow;
+        }
+
+        .color-maximo {
+            background: red;
+        }
+
+        /* === ESTADO INICIAL (sin resultados) === */
+        .estado-inicial {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            width: 100%;
+            height: 100%;
+            min-height: 400px;
+        }
+
+        .avatar-inicial {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            max-width: 600px;
+        }
+
+        /* === SECCIONES DE CONTENIDO === */
+        .info-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 1rem;
+            align-items: center;
+            text-align: center;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .info-text {
+            grid-column: 2;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            word-wrap: break-word;
+        }
+
+        .info-container img {
+            max-width: 150px;
+            border-radius: 12px;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 1s ease;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+
+        .info-container img.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .guia-uso {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: left;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 900px;
+            word-wrap: break-word;
+        }
+
+        .guia-uso ul {
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        /* === ESTILOS PARA EL CHATBOT === */
+        .chatbot-container {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 900px;
+            box-sizing: border-box;
+        }
+
+        .chat-messages {
+            height: 350px;
+            overflow-y: auto;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 1rem;
+            background: white;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .message {
+            padding: 0.8rem 1rem;
+            border-radius: 15px;
+            max-width: 85%;
+            word-wrap: break-word;
+            font-size: 0.95rem;
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .bot-message {
+            background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 0.8rem;
+            width: 100%;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .chat-input:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .suggested-questions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            width: 100%;
+        }
+
+        .question-chip {
+            background: linear-gradient(135deg, #FFEB3B, #FBC02D);
+            color: #333;
+            padding: 0.5rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            word-wrap: break-word;
+        }
+
+        .question-chip:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 0.5rem 1rem;
+            background: #f0f0f0;
+            border-radius: 15px;
+            align-self: flex-start;
+            font-style: italic;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* PESTAÑAS INTERNAS DEL PREDICTOR */
+        .pestanas-predictor {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            width: 100%;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 0.5rem;
+        }
+
+        .pestana-predictor {
+            background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+            color: #2E7D32;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .pestana-predictor:hover {
+            background: linear-gradient(135deg, #C8E6C9, #A5D6A7);
+            transform: translateY(-2px);
+        }
+
+        .pestana-predictor.activa {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border-color: #388E3C;
+        }
+
+        .contenido-pestana {
+            display: none;
+            width: 100%;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .contenido-pestana.activa {
+            display: block;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .contenido-predictor {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .avatar-container {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            
+            .burbuja-chat::before {
+                display: none;
+            }
+            
+            .info-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .info-text {
+                grid-column: 1;
+            }
+            
+            .info-container img {
+                max-width: 120px;
+            }
+            
+            .chat-messages {
+                height: 300px;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+            
+            .contenedor-principal {
+                padding: 1.5rem;
+                width: 95%;
+            }
+            
+            .leyenda-grafica {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .pestanas-predictor {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .pestana-predictor {
+                border-radius: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header>
+        <div class="header-text">
+            🌞 Predicción Solar - Avatar Inteligente
+        </div>
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='universidad_simon_bolivar_logo.jpg') }}" alt="Logo Universidad">
+        </div>
+    </header>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="contenedor-principal">
+        <div class="botones-panel">
+            <button onclick="mostrarSeccion('historicos')">ℹ️ Información</button>
+            <button onclick="mostrarSeccion('clima')">📘 Guía de uso</button>
+            <button onclick="mostrarSeccion('chatbot')">🤖 Chatbot</button>
+            <button onclick="mostrarSeccion('predictor')">🔮 Predictor</button>
+        </div>
+
+        <!-- SECCIÓN INFORMACIÓN -->
+        <div id="historicos" class="seccion">
+            <div class="info-container">
+                <img src="{{ url_for('static', filename='panel_solar.jpg') }}" alt="Panel solar 1">
+                <div class="info-text">
+                    <h3>ℹ️ ¿Por qué hacemos este proyecto?</h3>
+                    <p style="font-size: 1rem; line-height: 1.6;">
+                        Desarrollamos un sistema predictor de producción de energía solar con inteligencia artificial 
+                        que permite anticipar la generación energética, optimizar el consumo y mejorar la planificación 
+                        del uso de energía renovable.
+                    </p>
+                </div>
+                <img src="{{ url_for('static', filename='panel_solar2.jpg') }}" alt="Panel solar 2">
+            </div>
+        </div>
+
+        <!-- SECCIÓN GUÍA DE USO -->
+        <div id="clima" class="seccion">
+            <div class="guia-uso">
+                <h3>📘 Guía de Uso del Sistema Inteligente</h3>
+                <ul>
+                    <li><b>Ingresa los datos</b> de hora, iluminancia y temperatura</li>
+                    <li><b>Haz clic en Calcular Predicción</b> para obtener resultados</li>
+                    <li><b>Observa cómo el avatar</b> cambia según el análisis</li>
+                    <li><b>Recibe análisis inteligente</b> con recomendaciones prácticas</li>
+                    <li><b>Usa el botón Limpiar</b> para reiniciar cuando quieras</li>
+                </ul>
+                <p style="background: #E3F2FD; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                    <b>✨ Característica única:</b> Nuestro avatar inteligente analiza tus datos en tiempo real 
+                    y ofrece comentarios personalizados usando IA avanzada.
+                </p>
+            </div>
+        </div>
+
+        <!-- SECCIÓN CHATBOT -->
+        <div id="chatbot" class="seccion">
+            <div class="chatbot-container">
+                <h3>🤖 Chatbot Solar - Asistente Inteligente</h3>
+                <p>¡Hola! Soy tu asistente virtual especializado en energía solar. Puedo responder tus preguntas sobre:</p>
+                <ul>
+                    <li>📊 Análisis de datos solares</li>
+                    <li>🔧 Optimización de sistemas fotovoltaicos</li>
+                    <li>💡 Consejos de eficiencia energética</li>
+                    <li>🌞 Mantenimiento de paneles solares</li>
+                </ul>
+
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message bot-message">
+                        ¡Hola! 👋 Soy SolarBot, tu asistente especializado en energía solar. ¿En qué puedo ayudarte hoy? Puedes preguntarme sobre optimización de paneles, análisis de datos, mantenimiento o cualquier tema relacionado con energía solar.
+                    </div>
+                </div>
+
+                <div class="typing-indicator" id="typingIndicator">
+                    SolarBot está escribiendo...
+                </div>
+
+                <div class="suggested-questions">
+                    <button class="question-chip" onclick="sendSuggestedQuestion('¿Cómo puedo mejorar la eficiencia de mis paneles solares?')">
+                        💡 Mejorar eficiencia
+                    </button>
+                    <button class="question-chip" onclick="sendSuggestedQuestion('¿Qué mantenimiento necesitan los paneles solares?')">
+                        🔧 Mantenimiento
+                    </button>
+                    <button class="question-chip" onclick="sendSuggestedQuestion('¿Cuál es la mejor hora para producir energía solar?')">
+                        🌞 Horario óptimo
+                    </button>
+                    <button class="question-chip" onclick="sendSuggestedQuestion('¿Cómo interpretar los datos de producción solar?')">
+                        📊 Interpretar datos
+                    </button>
+                </div>
+
+                <div class="chat-input-container">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="Escribe tu pregunta sobre energía solar..." onkeypress="handleChatInput(event)">
+                    <button class="send-button" onclick="sendMessage()">Enviar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN PREDICTOR CON PESTAÑAS -->
+        <div id="predictor" class="seccion activa">
+            <div class="pestanas-predictor">
+                <button class="pestana-predictor {% if tipo == 'horas' or tipo == '' %}activa{% endif %}" onclick="mostrarPestana('horas')">🕒 Predicción Horaria</button>
+                <button class="pestana-predictor {% if tipo == 'mensual' %}activa{% endif %}" onclick="mostrarPestana('mensual')">📅 Predicción Mensual</button>
+                <button class="pestana-predictor {% if tipo == 'anual' %}activa{% endif %}" onclick="mostrarPestana('anual')">📊 Predicción Anual</button>
+            </div>
+
+            <!-- PESTAÑA PREDICCIÓN HORARIA -->
+            <div id="pestana-horas" class="contenido-pestana {% if tipo == 'horas' or tipo == '' %}activa{% endif %}">
+                <div class="contenido-predictor">
+                    <!-- COLUMNA IZQUIERDA - FORMULARIO -->
+                    <div class="columna-formulario">
+                        <form method="POST" action="/predictor/horas" class="formulario-predictor" id="predictionFormHoras" onsubmit="mostrarAvatarAnalizando('horas')">
+                            <label>🕒 Hora (HH:MM):</label>
+                            <input type="text" name="hora" value="{{ hora_val }}" placeholder="Ej: 14:30" required>
+
+                            <label>💡 Iluminancia (lux):</label>
+                            <input type="number" name="iluminancia" value="{{ iluminancia_val }}" placeholder="0-1200" min="0" max="1200" required>
+
+                            <label>🌡️ Temperatura (°C):</label>
+                            <input type="number" name="temperatura" value="{{ temperatura_val }}" placeholder="0-50" min="0" max="50" step="0.1" required>
+
+                            <button type="submit" class="btn-calcular" onclick="mostrarAvatarAnalizando('horas')">🚀 Calcular Predicción</button>
+                            <!-- MODIFICACIÓN: Botón limpiar con redirección -->
+                            <button type="button" onclick="window.location.href='/limpiar/horas'" class="btn-limpiar">🔄 Limpiar</button>
+                        </form>
+
+                        {% if resultado and tipo == 'horas' %}
+                            <div class="resultado">{{ resultado }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- COLUMNA DERECHA - RESULTADOS -->
+                    <div class="columna-resultados">
+                        {% if resultado and grafica_url and tipo == 'horas' %}
+                            <!-- CONTENIDO CUANDO HAY RESULTADOS -->
+                            <div class="avatar-container">
+                                <img src="{{ avatar_actual }}" alt="Avatar solar" class="avatar-img" id="avatarImgHoras">
+                                <div class="burbuja-chat">
+                                    <p class="mensaje-avatar" id="mensajeAvatarHoras">
+                                        {{ mensaje_avatar }}
+                                    </p>
+                                    
+                                    <div class="analisis-ia" id="analisisIAHoras">
+                                        🤖 <strong>Analizando con IA...</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grafica-container">
+                                <h3>📈 Análisis de Producción Solar Horaria</h3>
+                                <div class="leyenda-grafica">
+                                    <div class="item-leyenda">
+                                        <div class="color-muestra color-usuario"></div>
+                                        <span>Tu dato ingresado</span>
+                                    </div>
+                                    <div class="item-leyenda">
+                                        <div class="color-muestra color-maximo"></div>
+                                        <span>Máximo del día</span>
+                                    </div>
+                                </div>
+                                <img src="data:image/png;base64,{{ grafica_url }}" alt="Gráfica de producción solar horaria">
+                            </div>
+                        {% else %}
+                            <!-- ESTADO INICIAL (sin resultados) -->
+                            <div class="estado-inicial">
+                                <div class="avatar-inicial">
+                                    <img src="{{ url_for('static', filename='avatar_neutral.png') }}" alt="Avatar solar" class="avatar-img">
+                                    <div class="burbuja-chat">
+                                        <p class="mensaje-avatar">
+                                            ¡Hola! Estoy listo para analizar tu producción solar horaria. Ingresa los datos para comenzar.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- PESTAÑA PREDICCIÓN MENSUAL -->
+            <div id="pestana-mensual" class="contenido-pestana {% if tipo == 'mensual' %}activa{% endif %}">
+                <div class="contenido-predictor">
+                    <!-- COLUMNA IZQUIERDA - FORMULARIO -->
+                    <div class="columna-formulario">
+                        <form method="POST" action="/predictor/mensual" class="formulario-predictor" id="predictionFormMensual" onsubmit="mostrarAvatarAnalizando('mensual')">
+                            <label>📅 Mes:</label>
+                            <select name="mes" required>
+                                <option value="">Selecciona un mes</option>
+                                <option value="1" {% if mes_val == '1' %}selected{% endif %}>Enero</option>
+                                <option value="2" {% if mes_val == '2' %}selected{% endif %}>Febrero</option>
+                                <option value="3" {% if mes_val == '3' %}selected{% endif %}>Marzo</option>
+                                <option value="4" {% if mes_val == '4' %}selected{% endif %}>Abril</option>
+                                <option value="5" {% if mes_val == '5' %}selected{% endif %}>Mayo</option>
+                                <option value="6" {% if mes_val == '6' %}selected{% endif %}>Junio</option>
+                                <option value="7" {% if mes_val == '7' %}selected{% endif %}>Julio</option>
+                                <option value="8" {% if mes_val == '8' %}selected{% endif %}>Agosto</option>
+                                <option value="9" {% if mes_val == '9' %}selected{% endif %}>Septiembre</option>
+                                <option value="10" {% if mes_val == '10' %}selected{% endif %}>Octubre</option>
+                                <option value="11" {% if mes_val == '11' %}selected{% endif %}>Noviembre</option>
+                                <option value="12" {% if mes_val == '12' %}selected{% endif %}>Diciembre</option>
+                            </select>
+
+                            <label>💡 Iluminancia Promedio (lux):</label>
+                            <input type="number" name="iluminancia" value="{{ iluminancia_val }}" placeholder="0-1200" min="0" max="1200" required>
+
+                            <label>🌡️ Temperatura Promedio (°C):</label>
+                            <input type="number" name="temperatura" value="{{ temperatura_val }}" placeholder="0-50" min="0" max="50" step="0.1" required>
+
+                            <button type="submit" class="btn-calcular" onclick="mostrarAvatarAnalizando('mensual')">🚀 Calcular Predicción Mensual</button>
+                            <!-- MODIFICACIÓN: Botón limpiar con redirección -->
+                            <button type="button" onclick="window.location.href='/limpiar/mensual'" class="btn-limpiar">🔄 Limpiar</button>
+                        </form>
+
+                        {% if resultado and tipo == 'mensual' %}
+                            <div class="resultado">{{ resultado }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- COLUMNA DERECHA - RESULTADOS -->
+                    <div class="columna-resultados">
+                        {% if resultado and grafica_url and tipo == 'mensual' %}
+                            <!-- CONTENIDO CUANDO HAY RESULTADOS -->
+                            <div class="avatar-container">
+                                <img src="{{ avatar_actual }}" alt="Avatar solar" class="avatar-img" id="avatarImgMensual">
+                                <div class="burbuja-chat">
+                                    <p class="mensaje-avatar" id="mensajeAvatarMensual">
+                                        {{ mensaje_avatar }}
+                                    </p>
+                                    
+                                    <div class="analisis-ia" id="analisisIAMensual">
+                                        🤖 <strong>Analizando con IA...</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grafica-container">
+                                <h3>📈 Análisis de Producción Solar Mensual</h3>
+                                <div class="leyenda-grafica">
+                                    <div class="item-leyenda">
+                                        <div class="color-muestra color-usuario"></div>
+                                        <span>Tu dato ingresado</span>
+                                    </div>
+                                    <div class="item-leyenda">
+                                        <div class="color-muestra color-maximo"></div>
+                                        <span>Máximo del mes</span>
+                                    </div>
+                                </div>
+                                <img src="data:image/png;base64,{{ grafica_url }}" alt="Gráfica de producción solar mensual">
+                            </div>
+                        {% else %}
+                            <!-- ESTADO INICIAL (sin resultados) -->
+                            <div class="estado-inicial">
+                                <div class="avatar-inicial">
+                                    <img src="{{ url_for('static', filename='avatar_neutral.png') }}" alt="Avatar solar" class="avatar-img">
+                                    <div class="burbuja-chat">
+                                        <p class="mensaje-avatar">
+                                            ¡Hola! Estoy listo para analizar tu producción solar mensual. Selecciona el mes y ingresa los datos para comenzar.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- PESTAÑA PREDICCIÓN ANUAL -->
+            <div id="pestana-anual" class="contenido-pestana {% if tipo == 'anual' %}activa{% endif %}">
+                <div class="contenido-predictor">
+                    <!-- COLUMNA IZQUIERDA - FORMULARIO -->
+                    <div class="columna-formulario">
+                        <form method="POST" action="/predictor/anual" class="formulario-predictor" id="predictionFormAnual" onsubmit="mostrarAvatarAnalizando('anual')">
+                            <label>📊 Año:</label>
+                            <!-- CORRECCIÓN: Cambiado de min="2020" max="2030" a min="2018" max="2025" -->
+                            <input type="number" name="anio" value="{{ anio_val }}" min="2018" max="2025" placeholder="Ej: 2024" required>
+
+                            <label>💡 Iluminancia Promedio (lux):</label>
+                            <input type="number" name="iluminancia" value="{{ iluminancia_val }}" placeholder="0-1200" min="0" max="1200" required>
+
+                            <label>🌡️ Temperatura Promedio (°C):</label>
+                            <input type="number" name="temperatura" value="{{ temperatura_val }}" placeholder="0-50" min="0" max="50" step="0.1" required>
+
+                            <button type="submit" class="btn-calcular" onclick="mostrarAvatarAnalizando('anual')">🚀 Calcular Predicción Anual</button>
+                            <!-- MODIFICACIÓN: Botón limpiar con redirección -->
+                            <button type="button" onclick="window.location.href='/limpiar/anual'" class="btn-limpiar">🔄 Limpiar</button>
+                        </form>
+
+                        {% if resultado and tipo == 'anual' %}
+                            <div class="resultado">{{ resultado }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- COLUMNA DERECHA - RESULTADOS -->
+                    <div class="columna-resultados">
+                        {% if resultado and grafica_url and tipo == 'anual' %}
+                            <!-- CONTENIDO CUANDO HAY RESULTADOS -->
+                            <div class="avatar-container">
+                                <img src="{{ avatar_actual }}" alt="Avatar solar" class="avatar-img" id="avatarImgAnual">
+                                <div class="burbuja-chat">
+                                    <p class="mensaje-avatar" id="mensajeAvatarAnual">
+                                        {{ mensaje_avatar }}
+                                    </p>
+                                    
+                                    <div class="analisis-ia" id="analisisIAAnual">
+                                        🤖 <strong>Analizando con IA...</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grafica-container">
+                                <h3>📈 Análisis de Producción Solar Anual</h3>
+                                <div class="leyenda-grafica">
+                                    <div class="item-leyenda">
+                                        <div class="color-muestra color-usuario"></div>
+                                        <span>Tu dato ingresado</span>
+                                    </div>
+                                    <div class="item-leyenda">
+                                        <div class="color-muestra color-maximo"></div>
+                                        <span>Máximo del año</span>
+                                    </div>
+                                </div>
+                                <img src="data:image/png;base64,{{ grafica_url }}" alt="Gráfica de producción solar anual">
+                            </div>
+                        {% else %}
+                            <!-- ESTADO INICIAL (sin resultados) -->
+                            <div class="estado-inicial">
+                                <div class="avatar-inicial">
+                                    <img src="{{ url_for('static', filename='avatar_neutral.png') }}" alt="Avatar solar" class="avatar-img">
+                                    <div class="burbuja-chat">
+                                        <p class="mensaje-avatar">
+                                            ¡Hola! Estoy listo para analizar tu producción solar anual. Ingresa el año y los datos para comenzar.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function mostrarSeccion(id) {
+            document.querySelectorAll('.seccion').forEach(sec => sec.classList.remove('activa'));
+            const seccion = document.getElementById(id);
+            seccion.classList.add('activa');
+            
+            if (id === "historicos") {
+                const imagenes = seccion.querySelectorAll("img");
+                imagenes.forEach((img, i) => {
+                    img.classList.remove("visible");
+                    setTimeout(() => img.classList.add("visible"), 400 * (i + 1));
+                });
+            }
+        }
+
+        function mostrarPestana(tipo) {
+            // Ocultar todas las pestañas
+            document.querySelectorAll('.pestana-predictor').forEach(p => p.classList.remove('activa'));
+            document.querySelectorAll('.contenido-pestana').forEach(c => c.classList.remove('activa'));
+            
+            // Mostrar la pestaña seleccionada
+            document.querySelector(`.pestana-predictor[onclick="mostrarPestana('${tipo}')"]`).classList.add('activa');
+            document.getElementById(`pestana-${tipo}`).classList.add('activa');
+        }
+
+        function mostrarAvatarAnalizando(tipo) {
+            const avatarImg = document.getElementById(`avatarImg${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`);
+            const mensajeAvatar = document.getElementById(`mensajeAvatar${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`);
+            
+            if (avatarImg) {
+                avatarImg.src = "{{ url_for('static', filename='avatar_analizando.png') }}";
+            }
+            if (mensajeAvatar) {
+                mensajeAvatar.textContent = "🔍 Analizando tus datos... Por favor espera.";
+            }
+        }
+
+        // Inicializar análisis IA cuando hay resultados
+        document.addEventListener('DOMContentLoaded', function() {
+            const potencias = {{ predicciones | default([]) | tojson }};
+            const tipo = {{ tipo | default('') | tojson }};
+            
+            if(potencias && potencias.length > 0 && tipo) {
+                const analisisElement = document.getElementById(`analisisIA${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`);
+                if(analisisElement) {
+                    analisisElement.innerHTML = 
+                        '🤖 <strong>Conectando con IA para análisis avanzado...</strong>';
+                    
+                    fetch("/api/analisis_gpt", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ potencias: potencias, tipo: tipo })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if(data.comentario) {
+                            analisisElement.innerHTML = 
+                                '🤖 <strong>Análisis IA:</strong> ' + data.comentario;
+                        } else if(data.error) {
+                            analisisElement.innerHTML = 
+                                '⚠️ <strong>Error:</strong> ' + data.error;
+                        } else {
+                            analisisElement.innerHTML = 
+                                '⚠️ <strong>No se pudo generar el análisis.</strong>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        analisisElement.innerHTML = 
+                            '⚠️ <strong>Error al conectar con el servicio de análisis.</strong>';
+                    });
+                }
+            }
+        });
+
+        // Animación del avatar al hacer clic
+        document.addEventListener('DOMContentLoaded', function() {
+            const avatares = document.querySelectorAll('.avatar-img');
+            avatares.forEach(avatar => {
+                avatar.addEventListener('click', function() {
+                    this.style.transform = 'scale(1.1) rotate(10deg)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1) rotate(0deg)';
+                    }, 300);
+                });
+            });
+        });
+
+        // Funciones del chatbot (sin cambios)
+        function addMessage(message, isUser = false) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            messageDiv.textContent = message;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'block';
+            document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'none';
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                addMessage(message, true);
+                input.value = '';
+                
+                showTypingIndicator();
+                
+                try {
+                    const response = await fetch("/api/chatbot", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ mensaje: message })
+                    });
+                    
+                    if (!response.ok) throw new Error('Error en la respuesta del servidor');
+                    
+                    const data = await response.json();
+                    
+                    hideTypingIndicator();
+                    
+                    if (data.respuesta) {
+                        addMessage(data.respuesta);
+                    } else if (data.error) {
+                        addMessage(`⚠️ Lo siento, hubo un error: ${data.error}`);
+                    } else {
+                        addMessage("⚠️ No se pudo obtener una respuesta del asistente.");
+                    }
+                    
+                } catch (error) {
+                    hideTypingIndicator();
+                    console.error('Error:', error);
+                    addMessage("⚠️ Error de conexión. Por favor, intenta nuevamente.");
+                }
+            }
+        }
+
+        function sendSuggestedQuestion(question) {
+            document.getElementById('chatInput').value = question;
+            sendMessage();
+        }
+
+        function handleChatInput(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+    </script>
+</body>
+</html>
